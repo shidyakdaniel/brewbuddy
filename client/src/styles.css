@@ -1,0 +1,85 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: #111;
+  background: #fafafa;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.nav {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.nav a {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f1f1f1;
+  font-size: 14px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+input, select, button {
+  font: inherit;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+button {
+  background: #111;
+  color: white;
+  border-color: #111;
+}
+
+.small {
+  font-size: 12px;
+  color: #555;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
