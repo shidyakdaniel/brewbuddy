@@ -1,30 +1,69 @@
-import { beers, favorites } from '../data/mockData.js';
+import { supabase } from '../supabaseClient.js';
 
-export function addFavorite(req, res) {
-  const { user_id, beer_id } = req.body || {};
+export async function listFavorites(req, res) {
+  const { userId } = req.query;
 
-  const beerIdNum = Number(beer_id);
-
-  if (!user_id || !beer_id || Number.isNaN(beerIdNum)) {
-    return res.status(400).json({ error: 'Invalid payload. Expected { user_id, beer_id }' });
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing userId query param' });
   }
 
-  const beerExists = beers.some((b) => b.id === beerIdNum);
-  if (!beerExists) {
-    return res.status(404).json({ error: 'Beer not found' });
+  const { data, error } = await supabase.from('favorites').select('*').eq('user_id', userId);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
   }
 
-  const exists = favorites.some((f) => f.user_id === String(user_id) && f.beer_id === beerIdNum);
-  if (exists) {
-    return res.status(200).json({ ok: true, favorite: { user_id: String(user_id), beer_id: beerIdNum } });
+  return res.json(data);
+}
+
+export async function addFavorite(req, res) {
+  const payload = req.body || {};
+
+  if (!payload.user_id || !payload.beer_id) {
+    return res.status(400).json({ error: 'Invalid payload' });
   }
 
-  const newFav = {
-    id: favorites.length + 1,
-    user_id: String(user_id),
-    beer_id: beerIdNum
-  };
+  const { data: existing, error: existingError } = await supabase
+    .from('favorites')
+    .select('favorite_id')
+    .eq('user_id', payload.user_id)
+    .eq('beer_id', payload.beer_id)
+    .maybeSingle();
 
-  favorites.push(newFav);
-  return res.status(201).json({ favorite: newFav });
+  if (existingError) {
+    return res.status(500).json({ error: existingError.message });
+  }
+
+  if (existing) {
+    return res.status(409).send();
+  }
+
+  const { data, error } = await supabase.from('favorites').insert(payload).select('*').single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  return res.status(201).json(data);
+}
+
+export async function deleteFavorite(req, res) {
+  const { favoriteId } = req.params;
+
+  const { data, error } = await supabase
+    .from('favorites')
+    .delete()
+    .eq('favorite_id', favoriteId)
+    .select('favorite_id')
+    .maybeSingle();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: 'Resource not found' });
+  }
+
+  return res.status(204).send();
 }

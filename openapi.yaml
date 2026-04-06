@@ -1,0 +1,1131 @@
+openapi: 3.0.3
+info:
+  title: BrewBuddy API
+  description: >
+    REST API for the BrewBuddy beer discovery and tracking application.
+    The client never accesses the database directly — all data flows through
+    this API layer built with Express (Node.js) and deployed via AWS Lambda
+    using serverless-http. The backing database is Supabase (PostgreSQL).
+  version: 1.0.0
+
+servers:
+  - url: https://api.brewbuddy.com/v1
+    description: Production (AWS Lambda)
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Profiles
+    description: User profile management
+  - name: Breweries
+    description: Brewery data
+  - name: Beers
+    description: Beer discovery and filtering
+  - name: Ratings
+    description: User beer ratings
+  - name: Favorites
+    description: User saved favorites
+  - name: Tried Beers
+    description: User beer history
+  - name: Stores
+    description: Nearby store lookup
+  - name: Inventory
+    description: Beer availability at stores
+  - name: Recommendations
+    description: Personalized beer recommendations
+
+paths:
+
+  # --------------------------------------------------------
+  # PROFILES
+  # --------------------------------------------------------
+  /profiles/{userId}:
+    get:
+      tags: [Profiles]
+      summary: Get a user profile
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: User profile returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Profiles]
+      summary: Update a user profile
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdate'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Profiles]
+      summary: Delete a user profile
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '204':
+          description: Profile deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /profiles:
+    post:
+      tags: [Profiles]
+      summary: Create a user profile (called after auth signup)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileCreate'
+      responses:
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+
+  # --------------------------------------------------------
+  # BREWERIES
+  # --------------------------------------------------------
+  /breweries:
+    get:
+      tags: [Breweries]
+      summary: Get all breweries
+      responses:
+        '200':
+          description: List of breweries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+
+    post:
+      tags: [Breweries]
+      summary: Create a brewery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreweryCreate'
+      responses:
+        '201':
+          description: Brewery created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+
+  /breweries/{breweryId}:
+    get:
+      tags: [Breweries]
+      summary: Get a brewery by ID
+      parameters:
+        - $ref: '#/components/parameters/breweryId'
+      responses:
+        '200':
+          description: Brewery returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Breweries]
+      summary: Update a brewery
+      parameters:
+        - $ref: '#/components/parameters/breweryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreweryCreate'
+      responses:
+        '200':
+          description: Brewery updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Breweries]
+      summary: Delete a brewery
+      parameters:
+        - $ref: '#/components/parameters/breweryId'
+      responses:
+        '204':
+          description: Brewery deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --------------------------------------------------------
+  # BEERS
+  # --------------------------------------------------------
+  /beers:
+    get:
+      tags: [Beers]
+      summary: Get all beers with optional filters
+      parameters:
+        - name: style
+          in: query
+          description: Filter by beer style
+          schema:
+            type: string
+          example: IPA
+        - name: abv_min
+          in: query
+          description: Minimum ABV
+          schema:
+            type: number
+          example: 4.0
+        - name: abv_max
+          in: query
+          description: Maximum ABV
+          schema:
+            type: number
+          example: 8.0
+        - name: sort
+          in: query
+          description: Sort beers by field
+          schema:
+            type: string
+            enum: [popularity_score, abv, beer_name]
+          example: popularity_score
+      responses:
+        '200':
+          description: List of beers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Beer'
+
+    post:
+      tags: [Beers]
+      summary: Create a beer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeerCreate'
+      responses:
+        '201':
+          description: Beer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beer'
+
+  /beers/{beerId}:
+    get:
+      tags: [Beers]
+      summary: Get a beer by ID
+      parameters:
+        - $ref: '#/components/parameters/beerId'
+      responses:
+        '200':
+          description: Beer returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Beers]
+      summary: Update a beer
+      parameters:
+        - $ref: '#/components/parameters/beerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeerCreate'
+      responses:
+        '200':
+          description: Beer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Beers]
+      summary: Delete a beer
+      parameters:
+        - $ref: '#/components/parameters/beerId'
+      responses:
+        '204':
+          description: Beer deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --------------------------------------------------------
+  # RATINGS
+  # --------------------------------------------------------
+  /ratings:
+    get:
+      tags: [Ratings]
+      summary: Get all ratings (optionally filtered by user or beer)
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: beerId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of ratings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rating'
+
+    post:
+      tags: [Ratings]
+      summary: Submit a rating for a beer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingCreate'
+      responses:
+        '201':
+          description: Rating created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '409':
+          description: User has already rated this beer
+
+  /ratings/{ratingId}:
+    get:
+      tags: [Ratings]
+      summary: Get a rating by ID
+      parameters:
+        - $ref: '#/components/parameters/ratingId'
+      responses:
+        '200':
+          description: Rating returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Ratings]
+      summary: Update a rating
+      parameters:
+        - $ref: '#/components/parameters/ratingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingUpdate'
+      responses:
+        '200':
+          description: Rating updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rating'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Ratings]
+      summary: Delete a rating
+      parameters:
+        - $ref: '#/components/parameters/ratingId'
+      responses:
+        '204':
+          description: Rating deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --------------------------------------------------------
+  # FAVORITES
+  # --------------------------------------------------------
+  /favorites:
+    get:
+      tags: [Favorites]
+      summary: Get favorites for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of favorites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Favorite'
+
+    post:
+      tags: [Favorites]
+      summary: Add a beer to favorites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteCreate'
+      responses:
+        '201':
+          description: Favorite added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+        '409':
+          description: Beer is already in favorites
+
+  /favorites/{favoriteId}:
+    delete:
+      tags: [Favorites]
+      summary: Remove a beer from favorites
+      parameters:
+        - $ref: '#/components/parameters/favoriteId'
+      responses:
+        '204':
+          description: Favorite removed
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --------------------------------------------------------
+  # TRIED BEERS
+  # --------------------------------------------------------
+  /tried-beers:
+    get:
+      tags: [Tried Beers]
+      summary: Get tried beers for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of tried beers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TriedBeer'
+
+    post:
+      tags: [Tried Beers]
+      summary: Mark a beer as tried
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriedBeerCreate'
+      responses:
+        '201':
+          description: Beer marked as tried
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriedBeer'
+        '409':
+          description: Beer already marked as tried
+
+  /tried-beers/{triedId}:
+    put:
+      tags: [Tried Beers]
+      summary: Update notes on a tried beer
+      parameters:
+        - $ref: '#/components/parameters/triedId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Tried beer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriedBeer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Tried Beers]
+      summary: Remove a tried beer record
+      parameters:
+        - $ref: '#/components/parameters/triedId'
+      responses:
+        '204':
+          description: Record removed
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --------------------------------------------------------
+  # STORES
+  # --------------------------------------------------------
+  /stores:
+    get:
+      tags: [Stores]
+      summary: Get nearby stores
+      parameters:
+        - name: lat
+          in: query
+          description: User latitude
+          schema:
+            type: number
+          example: 39.7285
+        - name: lng
+          in: query
+          description: User longitude
+          schema:
+            type: number
+          example: -121.8375
+        - name: radius
+          in: query
+          description: Search radius in miles
+          schema:
+            type: number
+          example: 10
+      responses:
+        '200':
+          description: List of nearby stores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+
+    post:
+      tags: [Stores]
+      summary: Create a store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreCreate'
+      responses:
+        '201':
+          description: Store created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+
+  /stores/{storeId}:
+    get:
+      tags: [Stores]
+      summary: Get a store by ID
+      parameters:
+        - $ref: '#/components/parameters/storeId'
+      responses:
+        '200':
+          description: Store returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Stores]
+      summary: Update a store
+      parameters:
+        - $ref: '#/components/parameters/storeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreCreate'
+      responses:
+        '200':
+          description: Store updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Stores]
+      summary: Delete a store
+      parameters:
+        - $ref: '#/components/parameters/storeId'
+      responses:
+        '204':
+          description: Store deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --------------------------------------------------------
+  # INVENTORY
+  # --------------------------------------------------------
+  /inventory:
+    get:
+      tags: [Inventory]
+      summary: Get inventory records (filter by store or beer)
+      parameters:
+        - name: storeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: beerId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of inventory records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Inventory'
+
+    post:
+      tags: [Inventory]
+      summary: Create an inventory record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryCreate'
+      responses:
+        '201':
+          description: Inventory record created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+
+  /inventory/{inventoryId}:
+    put:
+      tags: [Inventory]
+      summary: Update an inventory record
+      parameters:
+        - $ref: '#/components/parameters/inventoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryUpdate'
+      responses:
+        '200':
+          description: Inventory updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Inventory]
+      summary: Delete an inventory record
+      parameters:
+        - $ref: '#/components/parameters/inventoryId'
+      responses:
+        '204':
+          description: Inventory record deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --------------------------------------------------------
+  # RECOMMENDATIONS
+  # --------------------------------------------------------
+  /recommendations:
+    get:
+      tags: [Recommendations]
+      summary: Get personalized beer recommendations for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          description: Number of recommendations to return
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: List of recommended beers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Beer'
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+components:
+
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    breweryId:
+      name: breweryId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    beerId:
+      name: beerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    storeId:
+      name: storeId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    ratingId:
+      name: ratingId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    favoriteId:
+      name: favoriteId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    triedId:
+      name: triedId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    inventoryId:
+      name: inventoryId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Resource not found
+
+    Profile:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        age_confirmed:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    ProfileCreate:
+      type: object
+      required: [user_id, age_confirmed]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        age_confirmed:
+          type: boolean
+
+    ProfileUpdate:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        age_confirmed:
+          type: boolean
+
+    Brewery:
+      type: object
+      properties:
+        brewery_id:
+          type: string
+          format: uuid
+        brewery_name:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+
+    BreweryCreate:
+      type: object
+      required: [brewery_name]
+      properties:
+        brewery_name:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+
+    Beer:
+      type: object
+      properties:
+        beer_id:
+          type: string
+          format: uuid
+        brewery_id:
+          type: string
+          format: uuid
+        beer_name:
+          type: string
+        style:
+          type: string
+        abv:
+          type: number
+        popularity_score:
+          type: integer
+        description:
+          type: string
+        image_url:
+          type: string
+
+    BeerCreate:
+      type: object
+      required: [brewery_id, beer_name]
+      properties:
+        brewery_id:
+          type: string
+          format: uuid
+        beer_name:
+          type: string
+        style:
+          type: string
+        abv:
+          type: number
+        popularity_score:
+          type: integer
+        description:
+          type: string
+        image_url:
+          type: string
+
+    Store:
+      type: object
+      properties:
+        store_id:
+          type: string
+          format: uuid
+        store_name:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip_code:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        hours:
+          type: string
+
+    StoreCreate:
+      type: object
+      required: [store_name]
+      properties:
+        store_name:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip_code:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        hours:
+          type: string
+
+    Rating:
+      type: object
+      properties:
+        rating_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        beer_id:
+          type: string
+          format: uuid
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+        review_text:
+          type: string
+        rated_at:
+          type: string
+          format: date-time
+
+    RatingCreate:
+      type: object
+      required: [user_id, beer_id, score]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        beer_id:
+          type: string
+          format: uuid
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+        review_text:
+          type: string
+
+    RatingUpdate:
+      type: object
+      properties:
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+        review_text:
+          type: string
+
+    Favorite:
+      type: object
+      properties:
+        favorite_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        beer_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+
+    FavoriteCreate:
+      type: object
+      required: [user_id, beer_id]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        beer_id:
+          type: string
+          format: uuid
+
+    TriedBeer:
+      type: object
+      properties:
+        tried_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        beer_id:
+          type: string
+          format: uuid
+        tried_at:
+          type: string
+          format: date-time
+        notes:
+          type: string
+
+    TriedBeerCreate:
+      type: object
+      required: [user_id, beer_id]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        beer_id:
+          type: string
+          format: uuid
+        notes:
+          type: string
+
+    Inventory:
+      type: object
+      properties:
+        inventory_id:
+          type: string
+          format: uuid
+        store_id:
+          type: string
+          format: uuid
+        beer_id:
+          type: string
+          format: uuid
+        availability_status:
+          type: string
+          enum: [in_stock, low_stock, out_of_stock]
+        estimated_price:
+          type: number
+        last_updated:
+          type: string
+          format: date-time
+
+    InventoryCreate:
+      type: object
+      required: [store_id, beer_id]
+      properties:
+        store_id:
+          type: string
+          format: uuid
+        beer_id:
+          type: string
+          format: uuid
+        availability_status:
+          type: string
+          enum: [in_stock, low_stock, out_of_stock]
+        estimated_price:
+          type: number
+
+    InventoryUpdate:
+      type: object
+      properties:
+        availability_status:
+          type: string
+          enum: [in_stock, low_stock, out_of_stock]
+        estimated_price:
+          type: number
+        last_updated:
+          type: string
+          format: date-time

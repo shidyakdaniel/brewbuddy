@@ -1,40 +1,104 @@
-import { beers } from '../data/mockData.js';
+import { supabase } from '../supabaseClient.js';
 
-export function listBeers(req, res) {
-  const { style, abvMin, abvMax, q } = req.query;
+export async function listBeers(req, res) {
+  const { style, abv_min, abv_max, sort } = req.query;
 
-  let result = [...beers];
-
-  if (q) {
-    const query = String(q).toLowerCase();
-    result = result.filter((b) => b.name.toLowerCase().includes(query));
-  }
+  let query = supabase.from('beers').select('*');
 
   if (style) {
-    const s = String(style).toLowerCase();
-    result = result.filter((b) => b.style.toLowerCase() === s);
+    query = query.eq('style', style);
   }
 
-  const min = abvMin != null ? Number(abvMin) : null;
-  const max = abvMax != null ? Number(abvMax) : null;
-
-  if (min != null && !Number.isNaN(min)) {
-    result = result.filter((b) => b.abv >= min);
-  }
-  if (max != null && !Number.isNaN(max)) {
-    result = result.filter((b) => b.abv <= max);
+  if (abv_min != null && abv_min !== '') {
+    const min = Number(abv_min);
+    if (!Number.isNaN(min)) {
+      query = query.gte('abv', min);
+    }
   }
 
-  res.json({ beers: result });
+  if (abv_max != null && abv_max !== '') {
+    const max = Number(abv_max);
+    if (!Number.isNaN(max)) {
+      query = query.lte('abv', max);
+    }
+  }
+
+  if (sort) {
+    const field = String(sort);
+    const ascending = field !== 'popularity_score';
+    query = query.order(field, { ascending });
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  return res.json(data);
 }
 
-export function getBeerById(req, res) {
-  const id = Number(req.params.id);
-  const beer = beers.find((b) => b.id === id);
+export async function createBeer(req, res) {
+  const payload = req.body || {};
 
-  if (!beer) {
-    return res.status(404).json({ error: 'Beer not found' });
+  if (!payload.brewery_id || !payload.beer_name) {
+    return res.status(400).json({ error: 'Invalid payload' });
   }
 
-  return res.json({ beer });
+  const { data, error } = await supabase.from('beers').insert(payload).select('*').single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  return res.status(201).json(data);
+}
+
+export async function getBeerById(req, res) {
+  const { beerId } = req.params;
+
+  const { data, error } = await supabase.from('beers').select('*').eq('beer_id', beerId).maybeSingle();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: 'Resource not found' });
+  }
+
+  return res.json(data);
+}
+
+export async function updateBeer(req, res) {
+  const { beerId } = req.params;
+  const payload = req.body || {};
+
+  const { data, error } = await supabase.from('beers').update(payload).eq('beer_id', beerId).select('*').maybeSingle();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: 'Resource not found' });
+  }
+
+  return res.json(data);
+}
+
+export async function deleteBeer(req, res) {
+  const { beerId } = req.params;
+
+  const { data, error } = await supabase.from('beers').delete().eq('beer_id', beerId).select('beer_id').maybeSingle();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: 'Resource not found' });
+  }
+
+  return res.status(204).send();
 }
