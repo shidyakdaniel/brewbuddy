@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = '/v1';
 
 async function request(path, options) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -40,7 +40,7 @@ export function postRating(payload) {
 }
 
 export function getRecommendations(userId) {
-  const qs = new URLSearchParams({ user_id: userId });
+  const qs = new URLSearchParams({ userId });
   return request(`/recommendations?${qs.toString()}`);
 }
 

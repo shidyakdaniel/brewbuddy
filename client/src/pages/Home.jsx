@@ -27,10 +27,15 @@ export default function Home() {
     setLoading(true);
     setError('');
 
-    getBeers({ style, abvMin, abvMax, q })
+    getBeers({
+      style,
+      abv_min: abvMin,
+      abv_max: abvMax,
+      q
+    })
       .then((data) => {
         if (cancelled) return;
-        setBeers(data.beers || []);
+        setBeers(Array.isArray(data) ? data : []);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -51,7 +56,7 @@ export default function Home() {
     getStores(storeQ)
       .then((data) => {
         if (cancelled) return;
-        setStores(data.stores || []);
+        setStores(Array.isArray(data) ? data : []);
       })
       .catch(() => {
         if (cancelled) return;
@@ -119,10 +124,10 @@ export default function Home() {
         {!loading && !error && beers.length === 0 && <div className="small">No beers found.</div>}
         <div className="stack">
           {beers.map((b) => (
-            <Link key={b.id} to={`/beers/${b.id}`} className="card">
+            <Link key={b.beer_id} to={`/beers/${b.beer_id}`} className="card">
               <div className="listItem">
                 <div>
-                  <div><strong>{b.name}</strong></div>
+                  <div><strong>{b.beer_name}</strong></div>
                   <div className="small">{b.style} • {b.abv}% ABV</div>
                 </div>
                 <div className="small">View</div>
@@ -141,9 +146,9 @@ export default function Home() {
         />
         <div className="stack">
           {stores.map((s) => (
-            <div key={s.id} className="card">
-              <div><strong>{s.name}</strong></div>
-              <div className="small">{s.location}</div>
+            <div key={s.store_id} className="card">
+              <div><strong>{s.store_name}</strong></div>
+              <div className="small">{s.city || ''}{s.state ? `, ${s.state}` : ''}</div>
             </div>
           ))}
         </div>

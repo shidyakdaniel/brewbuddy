@@ -23,7 +23,7 @@ export default function BeerDetail() {
     getBeer(id)
       .then((data) => {
         if (cancelled) return;
-        setBeer(data.beer);
+        setBeer(data);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -42,7 +42,7 @@ export default function BeerDetail() {
   async function onRate() {
     setMessage('');
     try {
-      await postRating({ user_id: DEMO_USER_ID, beer_id: Number(id), rating: Number(rating) });
+      await postRating({ user_id: DEMO_USER_ID, beer_id: id, score: Number(rating) });
       setMessage('Rating saved. Check Recommendations.');
     } catch (e) {
       setMessage(e.message || 'Failed to rate');
@@ -52,7 +52,7 @@ export default function BeerDetail() {
   async function onFavorite() {
     setMessage('');
     try {
-      await postFavorite({ user_id: DEMO_USER_ID, beer_id: Number(id) });
+      await postFavorite({ user_id: DEMO_USER_ID, beer_id: id });
       setMessage('Added to favorites (prototype).');
     } catch (e) {
       setMessage(e.message || 'Failed to favorite');
@@ -70,7 +70,7 @@ export default function BeerDetail() {
         {error && <div className="small">{error}</div>}
         {beer && (
           <>
-            <div><strong>{beer.name}</strong></div>
+            <div><strong>{beer.beer_name}</strong></div>
             <div className="small">{beer.style} • {beer.abv}% ABV</div>
 
             <div className="row">

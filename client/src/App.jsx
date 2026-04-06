@@ -6,6 +6,7 @@ import BeerDetail from './pages/BeerDetail.jsx';
 import Favorites from './pages/Favorites.jsx';
 import Recommendations from './pages/Recommendations.jsx';
 import Tried from './pages/Tried.jsx';
+import Stores from './pages/Stores.jsx';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/tried" element={<Tried />} />
         <Route path="/recommendations" element={<Recommendations />} />
+        <Route path="/stores" element={<Stores />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

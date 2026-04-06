@@ -20,7 +20,7 @@ export default function Tried() {
 
   useEffect(() => {
     getBeers({})
-      .then((data) => setBeers(data.beers || []))
+      .then((data) => setBeers(Array.isArray(data) ? data : []))
       .catch(() => setBeers([]));
   }, []);
 
@@ -28,7 +28,7 @@ export default function Tried() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(triedIds));
   }, [triedIds]);
 
-  const tried = beers.filter((b) => triedIds.includes(b.id));
+  const tried = beers.filter((b) => triedIds.includes(b.beer_id));
 
   return (
     <div className="stack">
@@ -45,18 +45,20 @@ export default function Tried() {
 
         <div className="stack">
           {beers.map((b) => {
-            const isTried = triedIds.includes(b.id);
+            const isTried = triedIds.includes(b.beer_id);
             return (
-              <div key={b.id} className="card">
+              <div key={b.beer_id} className="card">
                 <div className="listItem">
                   <div>
-                    <Link to={`/beers/${b.id}`}><strong>{b.name}</strong></Link>
+                    <Link to={`/beers/${b.beer_id}`}><strong>{b.beer_name}</strong></Link>
                     <div className="small">{b.style} • {b.abv}% ABV</div>
                   </div>
                   <button
                     onClick={() => {
                       setTriedIds((prev) =>
-                        prev.includes(b.id) ? prev.filter((x) => x !== b.id) : [...prev, b.id]
+                        prev.includes(b.beer_id)
+                          ? prev.filter((x) => x !== b.beer_id)
+                          : [...prev, b.beer_id]
                       );
                     }}
                   >
@@ -73,8 +75,8 @@ export default function Tried() {
         <div><strong>Your tried beers</strong></div>
         {tried.length === 0 && <div className="small">None yet.</div>}
         {tried.map((b) => (
-          <Link key={b.id} to={`/beers/${b.id}`} className="card">
-            <div><strong>{b.name}</strong></div>
+          <Link key={b.beer_id} to={`/beers/${b.beer_id}`} className="card">
+            <div><strong>{b.beer_name}</strong></div>
             <div className="small">{b.style} • {b.abv}% ABV</div>
           </Link>
         ))}

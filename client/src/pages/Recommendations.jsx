@@ -17,8 +17,8 @@ export default function Recommendations() {
 
     getRecommendations(DEMO_USER_ID)
       .then((data) => {
-        setItems(data.recommendations || []);
-        setReason(data.reason || '');
+        setItems(Array.isArray(data) ? data : []);
+        setReason('');
       })
       .catch((e) => {
         setError(e.message || 'Failed to load recommendations');
@@ -44,8 +44,8 @@ export default function Recommendations() {
         {error && <div className="small">{error}</div>}
         {!loading && !error && items.length === 0 && <div className="small">No recommendations yet.</div>}
         {items.map((b) => (
-          <Link key={b.id} to={`/beers/${b.id}`} className="card">
-            <div><strong>{b.name}</strong></div>
+          <Link key={b.beer_id} to={`/beers/${b.beer_id}`} className="card">
+            <div><strong>{b.beer_name}</strong></div>
             <div className="small">{b.style} • {b.abv}% ABV</div>
           </Link>
         ))}
