@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { getBeer, postFavorite, postRating } from '../services/api.js';
+import { getBeer, postRating } from '../services/api.js';
 
 const DEMO_USER_ID = 'demo-user';
 
@@ -11,6 +11,9 @@ export default function BeerDetail() {
   const [beer, setBeer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isTried, setIsTried] = useState(false);
 
   const [rating, setRating] = useState('5');
   const [message, setMessage] = useState('');
@@ -49,14 +52,12 @@ export default function BeerDetail() {
     }
   }
 
-  async function onFavorite() {
-    setMessage('');
-    try {
-      await postFavorite({ user_id: DEMO_USER_ID, beer_id: id });
-      setMessage('Added to favorites (prototype).');
-    } catch (e) {
-      setMessage(e.message || 'Failed to favorite');
-    }
+  function onToggleFavorite() {
+    setIsFavorited((prev) => !prev);
+  }
+
+  function onToggleTried() {
+    setIsTried((prev) => !prev);
   }
 
   return (
@@ -74,6 +75,15 @@ export default function BeerDetail() {
             <div className="small">{beer.style} • {beer.abv}% ABV</div>
 
             <div className="row">
+              <button onClick={onToggleFavorite} style={{ flex: 1 }}>
+                {isFavorited ? '♥ Favorited' : '♥ Favorite'}
+              </button>
+              <button onClick={onToggleTried} style={{ flex: 1 }}>
+                {isTried ? '✓ Tried' : '✓ Mark as Tried'}
+              </button>
+            </div>
+
+            <div className="row">
               <select value={rating} onChange={(e) => setRating(e.target.value)} style={{ flex: 1 }}>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -83,8 +93,6 @@ export default function BeerDetail() {
               </select>
               <button onClick={onRate} style={{ flex: 1 }}>Rate</button>
             </div>
-
-            <button onClick={onFavorite}>Add to favorites</button>
             {message && <div className="small">{message}</div>}
           </>
         )}
