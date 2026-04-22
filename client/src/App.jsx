@@ -7,12 +7,16 @@ import Favorites from './pages/Favorites.jsx';
 import Recommendations from './pages/Recommendations.jsx';
 import Tried from './pages/Tried.jsx';
 import Stores from './pages/Stores.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
 
 export default function App() {
   return (
     <Layout>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/beers/:id" element={<BeerDetail />} />
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/tried" element={<Tried />} />
