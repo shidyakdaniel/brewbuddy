@@ -81,6 +81,16 @@ export default function Home() {
   return (
     <div className="stack">
       <div className="card stack">
+        <div><strong>Recommendations</strong></div>
+        <div className="small">
+          Start with personalized picks based on what you like.
+        </div>
+        <div>
+          <Link to="/recommendations">View recommendations</Link>
+        </div>
+      </div>
+
+      <div className="card stack">
         <div><strong>Beer Discovery</strong></div>
         <div className="row">
           <input
