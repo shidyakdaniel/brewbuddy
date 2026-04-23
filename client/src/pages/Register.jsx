@@ -1,26 +1,46 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Register() {
-  const navigate = useNavigate();
+  const { signUp } = useAuth();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isOfAge, setIsOfAge] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault();
     if (!isOfAge) return;
-    navigate('/');
+
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      const { error: signUpError } = await signUp({ email, password });
+      if (signUpError) {
+        setError(signUpError.message || 'Failed to create account');
+        return;
+      }
+      setSuccess('Account created. Check your email to confirm your account, then sign in.');
+    } catch (e) {
+      setError(e?.message || 'Failed to create account');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="stack">
       <div className="card stack">
         <div><strong>Create Account</strong></div>
-        <div className="small">Prototype: no real authentication yet.</div>
+        <div className="small">Create an account with Supabase.</div>
       </div>
 
       <form className="card stack" onSubmit={onSubmit}>
@@ -74,10 +94,15 @@ export default function Register() {
             checked={isOfAge}
             onChange={(e) => setIsOfAge(e.target.checked)}
           />
-          <span className="small">I confirm I am of legal drinking age</span>
+          <span className="small">I confirm I am 21 or older</span>
         </label>
 
-        <button type="submit" disabled={!isOfAge}>Create Account</button>
+        <button type="submit" disabled={!isOfAge || loading}>
+          {loading ? 'Creating...' : 'Create Account'}
+        </button>
+
+        {error && <div className="small">{error}</div>}
+        {success && <div className="small">{success}</div>}
 
         <div className="small">
           Already have an account? <Link to="/login">Sign In</Link>

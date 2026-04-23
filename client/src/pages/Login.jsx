@@ -1,22 +1,41 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { useAuth } from '../context/AuthContext.jsx';
+
 export default function Login() {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault();
-    navigate('/');
+
+    setError('');
+    setLoading(true);
+    try {
+      const { error: signInError } = await signIn({ email, password });
+      if (signInError) {
+        setError(signInError.message || 'Failed to sign in');
+        return;
+      }
+      navigate('/');
+    } catch (e) {
+      setError(e?.message || 'Failed to sign in');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="stack">
       <div className="card stack">
         <div><strong>Sign In</strong></div>
-        <div className="small">Prototype: no real authentication yet.</div>
+        <div className="small">Use your Supabase account.</div>
       </div>
 
       <form className="card stack" onSubmit={onSubmit}>
@@ -42,7 +61,9 @@ export default function Login() {
           />
         </div>
 
-        <button type="submit">Sign In</button>
+        <button type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</button>
+
+        {error && <div className="small">{error}</div>}
 
         <div className="small">
           Don&apos;t have an account? <Link to="/register">Register</Link>
