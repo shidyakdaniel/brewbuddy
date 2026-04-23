@@ -17,7 +17,7 @@ export default function Stores() {
       const { data, error: fetchError } = await supabase
         .from('stores')
         .select('*')
-        .order('name', { ascending: true });
+        .order('store_name', { ascending: true });
 
       if (cancelled) return;
 
@@ -59,11 +59,10 @@ export default function Stores() {
         <div className="stack">
           {stores.map((s) => (
             <div key={s.store_id} className="card">
-              <div><strong>{s.name}</strong></div>
+              <div><strong>{s.store_name}</strong></div>
               <div className="small">
-                {s.address || ''}{s.city ? `, ${s.city}` : ''}{s.state ? `, ${s.state}` : ''}{s.zip ? ` ${s.zip}` : ''}
+                {s.address || ''}{s.city ? `, ${s.city}` : ''}{s.state ? `, ${s.state}` : ''}{s.zip_code ? ` ${s.zip_code}` : ''}
               </div>
-              {s.phone && <div className="small">{s.phone}</div>}
               {s.hours && <div className="small">{s.hours}</div>}
             </div>
           ))}

@@ -91,7 +91,7 @@ export default function BeerDetail() {
 
       const { data: existingRating, error: ratingError } = await supabase
         .from('ratings')
-        .select('rating')
+        .select('score')
         .eq('user_id', user.id)
         .eq('beer_id', beerId)
         .maybeSingle();
@@ -99,8 +99,8 @@ export default function BeerDetail() {
       if (cancelled) return;
       if (ratingError) {
         setMessage(ratingError.message || 'Failed to load rating');
-      } else if (existingRating?.rating != null) {
-        setRating(String(existingRating.rating));
+      } else if (existingRating?.score != null) {
+        setRating(String(existingRating.score));
       }
     }
 
@@ -122,7 +122,7 @@ export default function BeerDetail() {
           {
             user_id: user.id,
             beer_id: beerId,
-            rating: Number(rating)
+            score: Number(rating)
           },
           { onConflict: 'user_id,beer_id' }
         );
