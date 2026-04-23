@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { getBeer, postRating } from '../services/api.js';
+import { supabase } from '../lib/supabase.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
-const DEMO_USER_ID = 'demo-user';
+import { getBeer } from '../services/api.js';
 
 export default function BeerDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
+
+  const numericBeerId = Number(id);
+  const beerId = Number.isNaN(numericBeerId) ? id : numericBeerId;
 
   const [beer, setBeer] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -17,6 +22,8 @@ export default function BeerDetail() {
 
   const [rating, setRating] = useState('5');
   const [message, setMessage] = useState('');
+  const [favoriteId, setFavoriteId] = useState(null);
+  const [triedId, setTriedId] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,22 +49,142 @@ export default function BeerDetail() {
     };
   }, [id]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadUserState() {
+      setMessage('');
+      setFavoriteId(null);
+      setTriedId(null);
+      setIsFavorited(false);
+      setIsTried(false);
+
+      const { data: fav, error: favError } = await supabase
+        .from('favorites')
+        .select('favorite_id')
+        .eq('user_id', user.id)
+        .eq('beer_id', beerId)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (favError) {
+        setMessage(favError.message || 'Failed to load favorite');
+      } else {
+        setFavoriteId(fav?.favorite_id ?? null);
+        setIsFavorited(Boolean(fav));
+      }
+
+      const { data: tried, error: triedError } = await supabase
+        .from('tried_beers')
+        .select('tried_id')
+        .eq('user_id', user.id)
+        .eq('beer_id', beerId)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (triedError) {
+        setMessage(triedError.message || 'Failed to load tried status');
+      } else {
+        setTriedId(tried?.tried_id ?? null);
+        setIsTried(Boolean(tried));
+      }
+
+      const { data: existingRating, error: ratingError } = await supabase
+        .from('ratings')
+        .select('rating')
+        .eq('user_id', user.id)
+        .eq('beer_id', beerId)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (ratingError) {
+        setMessage(ratingError.message || 'Failed to load rating');
+      } else if (existingRating?.rating != null) {
+        setRating(String(existingRating.rating));
+      }
+    }
+
+    if (user?.id && id) {
+      loadUserState();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, id, beerId]);
+
   async function onRate() {
     setMessage('');
     try {
-      await postRating({ user_id: DEMO_USER_ID, beer_id: id, score: Number(rating) });
+      const { error: upsertError } = await supabase
+        .from('ratings')
+        .upsert(
+          {
+            user_id: user.id,
+            beer_id: beerId,
+            rating: Number(rating)
+          },
+          { onConflict: 'user_id,beer_id' }
+        );
+      if (upsertError) throw upsertError;
       setMessage('Rating saved. Check Recommendations.');
     } catch (e) {
       setMessage(e.message || 'Failed to rate');
     }
   }
 
-  function onToggleFavorite() {
-    setIsFavorited((prev) => !prev);
+  async function onToggleFavorite() {
+    setMessage('');
+    try {
+      if (isFavorited) {
+        const { error: deleteError } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('beer_id', beerId);
+        if (deleteError) throw deleteError;
+        setIsFavorited(false);
+        setFavoriteId(null);
+      } else {
+        const { data, error: insertError } = await supabase
+          .from('favorites')
+          .insert({ user_id: user.id, beer_id: beerId })
+          .select('favorite_id')
+          .single();
+        if (insertError) throw insertError;
+        setIsFavorited(true);
+        setFavoriteId(data?.favorite_id ?? null);
+      }
+    } catch (e) {
+      setMessage(e.message || 'Failed to update favorite');
+    }
   }
 
-  function onToggleTried() {
-    setIsTried((prev) => !prev);
+  async function onToggleTried() {
+    setMessage('');
+    try {
+      if (isTried) {
+        const { error: deleteError } = await supabase
+          .from('tried_beers')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('beer_id', beerId);
+        if (deleteError) throw deleteError;
+        setIsTried(false);
+        setTriedId(null);
+      } else {
+        const { data, error: insertError } = await supabase
+          .from('tried_beers')
+          .insert({ user_id: user.id, beer_id: beerId, tried_at: new Date().toISOString() })
+          .select('tried_id')
+          .single();
+        if (insertError) throw insertError;
+        setIsTried(true);
+        setTriedId(data?.tried_id ?? null);
+      }
+    } catch (e) {
+      setMessage(e.message || 'Failed to update tried');
+    }
   }
 
   return (
@@ -96,10 +223,6 @@ export default function BeerDetail() {
             {message && <div className="small">{message}</div>}
           </>
         )}
-      </div>
-
-      <div className="card small">
-        No authentication: using demo user id <code>{DEMO_USER_ID}</code>.
       </div>
     </div>
   );

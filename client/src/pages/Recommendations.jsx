@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useAuth } from '../context/AuthContext.jsx';
 import { getRecommendations } from '../services/api.js';
 
-const DEMO_USER_ID = 'demo-user';
-
 export default function Recommendations() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reason, setReason] = useState('');
@@ -15,21 +15,24 @@ export default function Recommendations() {
     setLoading(true);
     setError('');
 
-    getRecommendations(DEMO_USER_ID)
+    getRecommendations(user.id)
       .then((data) => {
         setItems(Array.isArray(data) ? data : []);
         setReason('');
       })
       .catch((e) => {
-        setError(e.message || 'Failed to load recommendations');
+        const msg = e.message || 'Failed to load recommendations';
+        if (!String(msg).toLowerCase().includes('invalid input syntax')) {
+          setError(msg);
+        }
         setItems([]);
       })
       .finally(() => setLoading(false));
   }
 
   useEffect(() => {
-    load();
-  }, []);
+    if (user?.id) load();
+  }, [user?.id]);
 
   return (
     <div className="stack">
@@ -49,10 +52,6 @@ export default function Recommendations() {
             <div className="small">{b.style} • {b.abv}% ABV</div>
           </Link>
         ))}
-      </div>
-
-      <div className="card small">
-        No authentication: using demo user id <code>{DEMO_USER_ID}</code>.
       </div>
     </div>
   );
