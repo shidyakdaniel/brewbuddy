@@ -1,6 +1,8 @@
-import { supabase } from '../supabaseClient.js';
+import { getSupabaseClient } from '../supabaseClient.js';
 
 export async function listStores(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { lat, lng } = req.query;
 
   let query = supabase.from('stores').select('*');
@@ -23,6 +25,8 @@ export async function listStores(req, res) {
 }
 
 export async function createStore(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const payload = req.body || {};
 
   if (!payload.store_name) {
@@ -39,6 +43,8 @@ export async function createStore(req, res) {
 }
 
 export async function getStore(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { storeId } = req.params;
 
   const { data, error } = await supabase.from('stores').select('*').eq('store_id', storeId).maybeSingle();
@@ -55,6 +61,8 @@ export async function getStore(req, res) {
 }
 
 export async function updateStore(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { storeId } = req.params;
   const payload = req.body || {};
 
@@ -72,6 +80,8 @@ export async function updateStore(req, res) {
 }
 
 export async function deleteStore(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { storeId } = req.params;
 
   const { data, error } = await supabase.from('stores').delete().eq('store_id', storeId).select('store_id').maybeSingle();

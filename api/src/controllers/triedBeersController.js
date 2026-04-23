@@ -1,6 +1,8 @@
-import { supabase } from '../supabaseClient.js';
+import { getSupabaseClient } from '../supabaseClient.js';
 
 export async function listTriedBeers(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { userId } = req.query;
 
   if (!userId) {
@@ -17,6 +19,8 @@ export async function listTriedBeers(req, res) {
 }
 
 export async function createTriedBeer(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const payload = req.body || {};
 
   if (!payload.user_id || !payload.beer_id) {
@@ -37,6 +41,8 @@ export async function createTriedBeer(req, res) {
 }
 
 export async function updateTriedBeer(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { triedId } = req.params;
   const payload = req.body || {};
 
@@ -54,6 +60,8 @@ export async function updateTriedBeer(req, res) {
 }
 
 export async function deleteTriedBeer(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { triedId } = req.params;
 
   const { data, error } = await supabase.from('tried_beers').delete().eq('tried_id', triedId).select('tried_id').maybeSingle();

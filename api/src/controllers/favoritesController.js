@@ -1,6 +1,8 @@
-import { supabase } from '../supabaseClient.js';
+import { getSupabaseClient } from '../supabaseClient.js';
 
 export async function listFavorites(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { userId } = req.query;
 
   if (!userId) {
@@ -17,6 +19,8 @@ export async function listFavorites(req, res) {
 }
 
 export async function addFavorite(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const payload = req.body || {};
 
   if (!payload.user_id || !payload.beer_id) {
@@ -48,6 +52,8 @@ export async function addFavorite(req, res) {
 }
 
 export async function deleteFavorite(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { favoriteId } = req.params;
 
   const { data, error } = await supabase

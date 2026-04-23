@@ -1,6 +1,8 @@
-import { supabase } from '../supabaseClient.js';
+import { getSupabaseClient } from '../supabaseClient.js';
 
 export async function getRecommendations(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { userId, limit } = req.query;
 
   if (!userId) {

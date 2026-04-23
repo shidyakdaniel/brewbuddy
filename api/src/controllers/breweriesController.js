@@ -1,6 +1,8 @@
-import { supabase } from '../supabaseClient.js';
+import { getSupabaseClient } from '../supabaseClient.js';
 
 export async function listBreweries(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { data, error } = await supabase.from('breweries').select('*');
 
   if (error) {
@@ -11,6 +13,8 @@ export async function listBreweries(req, res) {
 }
 
 export async function createBrewery(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const payload = req.body || {};
 
   if (!payload.brewery_name) {
@@ -27,6 +31,8 @@ export async function createBrewery(req, res) {
 }
 
 export async function getBrewery(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { breweryId } = req.params;
 
   const { data, error } = await supabase.from('breweries').select('*').eq('brewery_id', breweryId).maybeSingle();
@@ -43,6 +49,8 @@ export async function getBrewery(req, res) {
 }
 
 export async function updateBrewery(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { breweryId } = req.params;
   const payload = req.body || {};
 
@@ -60,6 +68,8 @@ export async function updateBrewery(req, res) {
 }
 
 export async function deleteBrewery(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { breweryId } = req.params;
 
   const { data, error } = await supabase.from('breweries').delete().eq('brewery_id', breweryId).select('brewery_id').maybeSingle();

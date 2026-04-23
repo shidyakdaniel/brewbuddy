@@ -1,6 +1,8 @@
-import { supabase } from '../supabaseClient.js';
+import { getSupabaseClient } from '../supabaseClient.js';
 
 export async function listRatings(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { userId, beerId } = req.query;
 
   let query = supabase.from('ratings').select('*');
@@ -22,6 +24,8 @@ export async function listRatings(req, res) {
 }
 
 export async function createRating(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const payload = req.body || {};
 
   if (!payload.user_id || !payload.beer_id || payload.score == null) {
@@ -58,6 +62,8 @@ export async function createRating(req, res) {
 }
 
 export async function getRating(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { ratingId } = req.params;
 
   const { data, error } = await supabase.from('ratings').select('*').eq('rating_id', ratingId).maybeSingle();
@@ -74,6 +80,8 @@ export async function getRating(req, res) {
 }
 
 export async function updateRating(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { ratingId } = req.params;
   const payload = req.body || {};
 
@@ -99,6 +107,8 @@ export async function updateRating(req, res) {
 }
 
 export async function deleteRating(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { ratingId } = req.params;
 
   const { data, error } = await supabase.from('ratings').delete().eq('rating_id', ratingId).select('rating_id').maybeSingle();

@@ -1,6 +1,8 @@
-import { supabase } from '../supabaseClient.js';
+import { getSupabaseClient } from '../supabaseClient.js';
 
 export async function listInventory(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { storeId, beerId } = req.query;
 
   let query = supabase.from('inventory').select('*');
@@ -22,6 +24,8 @@ export async function listInventory(req, res) {
 }
 
 export async function createInventory(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const payload = req.body || {};
 
   if (!payload.store_id || !payload.beer_id) {
@@ -38,6 +42,8 @@ export async function createInventory(req, res) {
 }
 
 export async function updateInventory(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { inventoryId } = req.params;
   const payload = req.body || {};
 
@@ -60,6 +66,8 @@ export async function updateInventory(req, res) {
 }
 
 export async function deleteInventory(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { inventoryId } = req.params;
 
   const { data, error } = await supabase

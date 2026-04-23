@@ -1,6 +1,8 @@
-import { supabase } from '../supabaseClient.js';
+import { getSupabaseClient } from '../supabaseClient.js';
 
 export async function getProfile(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { userId } = req.params;
 
   const { data, error } = await supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle();
@@ -17,6 +19,8 @@ export async function getProfile(req, res) {
 }
 
 export async function createProfile(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const payload = req.body || {};
 
   if (!payload.user_id || payload.age_confirmed == null) {
@@ -33,6 +37,8 @@ export async function createProfile(req, res) {
 }
 
 export async function updateProfile(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { userId } = req.params;
   const payload = req.body || {};
 
@@ -50,6 +56,8 @@ export async function updateProfile(req, res) {
 }
 
 export async function deleteProfile(req, res) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   const { userId } = req.params;
 
   const { data, error } = await supabase.from('profiles').delete().eq('user_id', userId).select('user_id').maybeSingle();
