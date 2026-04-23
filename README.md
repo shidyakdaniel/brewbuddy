@@ -1,49 +1,71 @@
-# BrewBuddy (MVP Prototype)
+# BrewBuddy
 
-Mobile-first web app prototype to discover beers, rate them, get simple recommendations, track favorites/tried, and search nearby stores.
+A beer discovery web app that helps users find craft beers, track their favorites, rate what they've tried, and locate nearby stores. Built as a class project for CSU Chico.
 
-## Project Structure
+## Live App
 
-- `client/` React (Vite) frontend
-- `api/` Node.js (Express) backend (mock data)
-- `supabase/` SQL migrations + seed data
-- `docs/` Product + API notes
+https://master.d2sgyfheoqna29.amplifyapp.com
 
-## Prerequisites
+## Tech Stack
 
-- Node.js 18+ recommended
+- **Frontend:** React (Vite) hosted on AWS Amplify
+- **Backend:** Express API on AWS Lambda via Serverless Framework
+- **Database:** Supabase (PostgreSQL)
+- **Auth:** Supabase Auth (email + password)
+- **Maps:** Leaflet + OpenStreetMap
 
-## Run Backend (API)
+## Features
 
-```bash
-npm install
-npm run dev
-```
+- Browse and search beers by name, style, and ABV
+- View detailed beer information
+- Save beers to favorites (one-click)
+- Mark beers as tried with liked/disliked tracking (green/red indicators)
+- Rate beers on a 1-5 scale
+- View personalized recommendations based on ratings
+- Find nearby stores on an interactive map
+- User authentication with age verification (21+)
 
-From `api/`, the server runs on `http://localhost:3001`.
+## Setup Instructions
 
-## Run Frontend (Client)
+### Prerequisites
+- Node.js 18+
+- npm
+- AWS CLI configured
+- Supabase project
 
-```bash
-npm install
-npm run dev
-```
+### Frontend
+1. cd client
+2. npm install
+3. Create .env.local with:
+   - VITE_SUPABASE_URL=your_supabase_url
+   - VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   - VITE_API_BASE=your_api_endpoint
+4. npm run dev
 
-From `client/`, the app runs on `http://localhost:5173` and proxies `/api/*` to the backend.
+### Backend
+1. cd api
+2. npm install
+3. Configure AWS Secrets Manager with Supabase credentials
+4. npx serverless deploy --stage dev
 
-## API Endpoints (Mock)
+## Demo User Instructions
 
-- `GET /api/beers`
-- `GET /api/beers/:id`
-- `POST /api/ratings`
-- `GET /api/recommendations`
-- `POST /api/favorites`
-- `GET /api/stores`
-- `GET /api/availability`
+1. Go to the live app URL above
+2. Click "Register" to create a new account
+3. Enter your email, create a password, and confirm you are 21+
+4. Check your email for a confirmation link and click it
+5. Return to the app and log in with your credentials
+6. Browse beers, add favorites, mark beers as tried, and rate them
+7. Visit Recommendations to see personalized suggestions
+8. Visit Stores to see nearby locations on the map
 
-## Supabase
+## Known Issues
 
-Schema + seed SQL are in `supabase/`.
+- Recommendations are basic and currently show beers sorted by popularity rather than a true recommendation algorithm
+- Map placeholder area may appear briefly before tiles load
+- No profile management page yet
 
-- Migration: `supabase/migrations/001_init.sql`
-- Seed: `supabase/seed.sql`
+## Deployment
+
+- **Frontend:** Pushes to master branch auto-deploy via AWS Amplify
+- **Backend:** Deploy manually with `cd api && npx serverless deploy --stage dev`
