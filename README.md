@@ -69,3 +69,32 @@ https://master.d2sgyfheoqna29.amplifyapp.com
 
 - **Frontend:** Pushes to master branch auto-deploy via AWS Amplify
 - **Backend:** Deploy manually with `cd api && npx serverless deploy --stage dev`
+
+## Deployed Application
+
+**Live Site:** [https://master.d2sgyfheoqna29.amplifyapp.com](https://master.d2sgyfheoqna29.amplifyapp.com)
+
+### Local Setup Notes
+- Make sure you have Node.js 18+ and npm installed
+- Clone the repo: `git clone https://github.com/shidyakdaniel/brewbuddy.git` 
+- Frontend: `cd client && npm install && npm run dev` 
+- Backend: `cd api && npm install && npx serverless deploy --stage dev` 
+- You must create `client/.env.local` with your own Supabase URL and anon key
+- You must configure AWS Secrets Manager with your Supabase credentials for the backend
+
+### Troubleshooting Tips
+- If beers don't load on the Home page, check that RLS policies exist for the beers table (needs a public SELECT policy)
+- If favorites/tried/ratings fail, make sure the user_id foreign keys point to auth.users, not a public users table
+- If the API returns CORS errors, verify CORS_ORIGIN in AWS Secrets Manager matches your Amplify URL exactly
+- If login doesn't work, check that your Supabase project has email auth enabled under Authentication > Providers
+- If the Stores map doesn't render, make sure leaflet CSS is imported in Stores.jsx
+
+### Known Issues / Incomplete Features
+- Recommendations are sorted by popularity rather than a true personalized algorithm
+- No profile management page (users can't edit their name or preferences)
+- Store search/filter not yet implemented (all stores shown)
+- Beer availability and estimated pricing at stores not yet wired up
+- Map tiles may briefly show a gray placeholder before loading
+
+### Support
+For questions or issues, contact: **dannyshidyak12345678@gmail.com**
